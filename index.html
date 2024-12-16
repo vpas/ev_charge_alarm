@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Charge Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .row {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="range"] {
+            flex-grow: 1;
+            height: 30px;
+        }
+        .value-display {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+        }
+        #timeResult {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2196F3;
+            text-align: center;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #333;">EV Charge Calculator</h1>
+        
+        <div class="row">
+            <label>Battery Capacity (kWh)</label>
+            <div class="slider-container">
+                <input type="range" id="batteryCapacity" min="0" max="100" step="1" value="50">
+                <span class="value-display" id="batteryCapacityValue">50 kWh</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <label>Current Charge (%)</label>
+            <div class="slider-container">
+                <input type="range" id="currentCharge" min="0" max="80" step="1" value="20">
+                <span class="value-display" id="currentChargeValue">20%</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <label>Charger Speed (kW)</label>
+            <div class="slider-container">
+                <input type="range" id="chargerSpeed" min="0" max="50" step="1" value="25">
+                <span class="value-display" id="chargerSpeedValue">25 kW</span>
+            </div>
+        </div>
+
+        <div id="timeResult">
+            Time to 80%: Calculating...
+        </div>
+
+        <button id="setAlarm">Set Alarm</button>
+    </div>
+
+    <script>
+        // Get all elements
+        const batteryCapacity = document.getElementById('batteryCapacity');
+        const currentCharge = document.getElementById('currentCharge');
+        const chargerSpeed = document.getElementById('chargerSpeed');
+        const timeResult = document.getElementById('timeResult');
+        const setAlarmButton = document.getElementById('setAlarm');
+
+        // Update value displays
+        function updateValue(slider, valueDisplay, unit) {
+            const display = document.getElementById(valueDisplay);
+            display.textContent = `${slider.value}${unit}`;
+        }
+
+        // Calculate charging time
+        function calculateChargingTime() {
+            const capacity = parseFloat(batteryCapacity.value);
+            const current = parseFloat(currentCharge.value);
+            const speed = parseFloat(chargerSpeed.value);
+            
+            if (speed === 0) {
+                timeResult.textContent = 'Time to 80%: ∞ (Charger speed is 0)';
+                return;
+            }
+
+            // Calculate energy needed to reach 80%
+            const targetCharge = 80;
+            const energyNeeded = (capacity * (targetCharge - current) / 100);
+            const hours = energyNeeded / speed;
+            
+            // Convert to hours and minutes
+            const hoursWhole = Math.floor(hours);
+            const minutes = Math.round((hours - hoursWhole) * 60);
+            
+            let timeString = '';
+            if (hoursWhole > 0) {
+                timeString += `${hoursWhole} hour${hoursWhole !== 1 ? 's' : ''} `;
+            }
+            if (minutes > 0) {
+                timeString += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+            }
+            
+            timeResult.textContent = `Time to 80%: ${timeString}`;
+        }
+
+        // Add event listeners
+        batteryCapacity.addEventListener('input', () => {
+            updateValue(batteryCapacity, 'batteryCapacityValue', ' kWh');
+            calculateChargingTime();
+        });
+
+        currentCharge.addEventListener('input', () => {
+            updateValue(currentCharge, 'currentChargeValue', '%');
+            calculateChargingTime();
+        });
+
+        chargerSpeed.addEventListener('input', () => {
+            updateValue(chargerSpeed, 'chargerSpeedValue', ' kW');
+            calculateChargingTime();
+        });
+
+        setAlarmButton.addEventListener('click', () => {
+            alert('Alarm feature coming soon!');
+        });
+
+        // Initial calculation
+        calculateChargingTime();
+    </script>
+</body>
+</html> 
