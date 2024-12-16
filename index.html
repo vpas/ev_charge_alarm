@@ -65,9 +65,76 @@
         button:hover {
             background: #1976D2;
         }
+        .setup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .setup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        .setup-content h2 {
+            color: #2196F3;
+            margin-top: 0;
+        }
+        
+        .setup-content p {
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+        
+        .setup-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .setup-button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .setup-primary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .setup-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
     </style>
 </head>
 <body>
+    <div class="setup-overlay" id="setupOverlay">
+        <div class="setup-content">
+            <h2>First Time Setup</h2>
+            <p>To use the alarm feature on your iOS device, you need to install a pre-configured shortcut.</p>
+            <p>This shortcut will allow the app to set alarms for your EV charging completion.</p>
+            <div class="setup-buttons">
+                <button class="setup-button setup-primary" id="installShortcut">Install Shortcut</button>
+                <button class="setup-button setup-secondary" id="skipSetup">Skip</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <h1 style="text-align: center; color: #333;">EV Charge Calculator</h1>
         
@@ -109,6 +176,9 @@
         const chargerSpeed = document.getElementById('chargerSpeed');
         const timeResult = document.getElementById('timeResult');
         const setAlarmButton = document.getElementById('setAlarm');
+        const setupOverlay = document.getElementById('setupOverlay');
+        const installShortcutBtn = document.getElementById('installShortcut');
+        const skipSetupBtn = document.getElementById('skipSetup');
 
         // Cookie functions
         function setCookie(name, value, days = 365) {
@@ -244,10 +314,40 @@
             setAlarm(chargingTime.hours, chargingTime.minutes);
         });
 
+        // Check if first visit
+        function isFirstVisit() {
+            return !getCookie('setupComplete');
+        }
+
+        // Mark setup as complete
+        function markSetupComplete() {
+            setCookie('setupComplete', 'true');
+            setupOverlay.style.display = 'none';
+        }
+
+        // Show setup overlay if needed
+        function checkSetup() {
+            if (isIOS() && isFirstVisit()) {
+                setupOverlay.style.display = 'flex';
+            }
+        }
+
+        // Setup event listeners for overlay
+        installShortcutBtn.addEventListener('click', () => {
+            window.location.href = 'https://www.icloud.com/shortcuts/41cea622f2734217b962b1f23624d3ac';
+            markSetupComplete();
+        });
+
+        skipSetupBtn.addEventListener('click', () => {
+            markSetupComplete();
+        });
+
         // Load saved values on page load
         loadSavedValues();
         // Initial calculation
         calculateChargingTime();
+        // Check if setup needed
+        checkSetup();
     </script>
 </body>
 </html> 
