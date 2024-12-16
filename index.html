@@ -110,10 +110,49 @@
         const timeResult = document.getElementById('timeResult');
         const setAlarmButton = document.getElementById('setAlarm');
 
+        // Cookie functions
+        function setCookie(name, value, days = 365) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = `expires=${date.toUTCString()}`;
+            document.cookie = `${name}=${value};${expires};path=/`;
+        }
+
+        function getCookie(name) {
+            const cookieName = `${name}=`;
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.indexOf(cookieName) === 0) {
+                    return cookie.substring(cookieName.length);
+                }
+            }
+            return null;
+        }
+
+        // Load values from cookies
+        function loadSavedValues() {
+            const savedBattery = getCookie('batteryCapacity');
+            const savedCharge = getCookie('currentCharge');
+            const savedSpeed = getCookie('chargerSpeed');
+
+            if (savedBattery) batteryCapacity.value = savedBattery;
+            if (savedCharge) currentCharge.value = savedCharge;
+            if (savedSpeed) chargerSpeed.value = savedSpeed;
+
+            // Update displays
+            updateValue(batteryCapacity, 'batteryCapacityValue', ' kWh');
+            updateValue(currentCharge, 'currentChargeValue', '%');
+            updateValue(chargerSpeed, 'chargerSpeedValue', ' kW');
+            calculateChargingTime();
+        }
+
         // Update value displays
         function updateValue(slider, valueDisplay, unit) {
             const display = document.getElementById(valueDisplay);
             display.textContent = `${slider.value}${unit}`;
+            // Save to cookie when value changes
+            setCookie(slider.id, slider.value);
         }
 
         // Calculate charging time
@@ -167,6 +206,8 @@
             alert('Alarm feature coming soon!');
         });
 
+        // Load saved values on page load
+        loadSavedValues();
         // Initial calculation
         calculateChargingTime();
     </script>
