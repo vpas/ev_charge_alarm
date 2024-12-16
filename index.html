@@ -177,6 +177,51 @@
             border-top: 1px solid #eee;
         }
 
+        .preset-list {
+            margin: 10px 0;
+        }
+
+        .preset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #eee;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .preset-item input[type="number"] {
+            width: 70px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .preset-item button {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            background: #ff4444;
+        }
+
+        .add-preset {
+            width: auto;
+            padding: 8px 15px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .preset-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-top: 5px;
+            background: white;
+        }
+
         @media (max-width: 600px) {
             .settings-panel {
                 width: 100%;
@@ -211,6 +256,14 @@
                     <span class="value-display" id="batteryCapacityValue">50 kWh</span>
                 </div>
             </div>
+
+            <div class="row">
+                <label>Charger Speed Presets (kW)</label>
+                <div id="presetList" class="preset-list">
+                    <!-- Presets will be added here dynamically -->
+                </div>
+                <button class="add-preset" id="addPreset">Add Preset</button>
+            </div>
         </div>
     </div>
 
@@ -227,11 +280,10 @@
         </div>
 
         <div class="row">
-            <label>Charger Speed (kW)</label>
-            <div class="slider-container">
-                <input type="range" id="chargerSpeed" min="0" max="50" step="1" value="25">
-                <span class="value-display" id="chargerSpeedValue">25 kW</span>
-            </div>
+            <label>Charger Speed</label>
+            <select id="chargerSpeedPreset" class="preset-select">
+                <!-- Presets will be added here dynamically -->
+            </select>
         </div>
 
         <div id="timeResult">
@@ -245,7 +297,7 @@
         // Get all elements
         const batteryCapacity = document.getElementById('batteryCapacity');
         const currentCharge = document.getElementById('currentCharge');
-        const chargerSpeed = document.getElementById('chargerSpeed');
+        const chargerSpeedPreset = document.getElementById('chargerSpeedPreset');
         const timeResult = document.getElementById('timeResult');
         const setAlarmButton = document.getElementById('setAlarm');
         const setupOverlay = document.getElementById('setupOverlay');
@@ -254,6 +306,8 @@
         const settingsPanel = document.getElementById('settingsPanel');
         const openSettingsBtn = document.getElementById('openSettings');
         const closeSettingsBtn = document.getElementById('closeSettings');
+        const presetList = document.getElementById('presetList');
+        const addPresetBtn = document.getElementById('addPreset');
 
         // Cookie functions
         function setCookie(name, value, days = 365) {
@@ -279,16 +333,16 @@
         function loadSavedValues() {
             const savedBattery = getCookie('batteryCapacity');
             const savedCharge = getCookie('currentCharge');
-            const savedSpeed = getCookie('chargerSpeed');
+            const savedSpeed = getCookie('chargerSpeedPreset');
 
             if (savedBattery) batteryCapacity.value = savedBattery;
             if (savedCharge) currentCharge.value = savedCharge;
-            if (savedSpeed) chargerSpeed.value = savedSpeed;
+            if (savedSpeed) chargerSpeedPreset.value = savedSpeed;
 
             // Update displays
             updateValue(batteryCapacity, 'batteryCapacityValue', ' kWh');
             updateValue(currentCharge, 'currentChargeValue', '%');
-            updateValue(chargerSpeed, 'chargerSpeedValue', ' kW');
+            updateValue(chargerSpeedPreset, 'chargerSpeedPresetValue', ' kW');
             calculateChargingTime();
         }
 
@@ -304,7 +358,7 @@
         function calculateChargingTime() {
             const capacity = parseFloat(batteryCapacity.value);
             const current = parseFloat(currentCharge.value);
-            const speed = parseFloat(chargerSpeed.value);
+            const speed = parseFloat(chargerSpeedPreset.value);
             
             if (speed === 0) {
                 timeResult.textContent = 'Time to 80%: ∞ (Charger speed is 0)';
@@ -379,10 +433,7 @@
             calculateChargingTime();
         });
 
-        chargerSpeed.addEventListener('input', () => {
-            updateValue(chargerSpeed, 'chargerSpeedValue', ' kW');
-            calculateChargingTime();
-        });
+        chargerSpeedPreset.addEventListener('change', calculateChargingTime);
 
         setAlarmButton.addEventListener('click', () => {
             const chargingTime = calculateChargingTime();
@@ -445,6 +496,84 @@
                 closeSettings();
             }
         });
+
+        // Default presets if none saved
+        const defaultPresets = [
+            { name: 'Home Charger', speed: 7 },
+            { name: 'Public AC', speed: 22 },
+            { name: 'Fast DC', speed: 50 }
+        ];
+
+        // Load presets from cookies or use defaults
+        function loadPresets() {
+            const savedPresets = getCookie('chargerPresets');
+            return savedPresets ? JSON.parse(savedPresets) : defaultPresets;
+        }
+
+        // Save presets to cookies
+        function savePresets(presets) {
+            setCookie('chargerPresets', JSON.stringify(presets));
+            updatePresetSelects(presets);
+        }
+
+        // Update all preset displays
+        function updatePresetSelects(presets) {
+            // Update settings list
+            presetList.innerHTML = presets.map((preset, index) => `
+                <div class="preset-item">
+                    <input type="text" value="${preset.name}" 
+                           onchange="updatePresetName(${index}, this.value)" placeholder="Name">
+                    <input type="number" value="${preset.speed}" min="0" max="350"
+                           onchange="updatePresetSpeed(${index}, this.value)" placeholder="kW">
+                    <button onclick="deletePreset(${index})">×</button>
+                </div>
+            `).join('');
+
+            // Update main screen select
+            const selectedValue = chargerSpeedPreset.value;
+            chargerSpeedPreset.innerHTML = presets.map(preset => `
+                <option value="${preset.speed}">${preset.name} (${preset.speed} kW)</option>
+            `).join('');
+            
+            // Try to restore selected value
+            if (selectedValue) {
+                chargerSpeedPreset.value = selectedValue;
+            }
+
+            // Update charging time calculation
+            calculateChargingTime();
+        }
+
+        // Preset management functions
+        function addPreset() {
+            const presets = loadPresets();
+            presets.push({ name: 'New Preset', speed: 0 });
+            savePresets(presets);
+        }
+
+        function deletePreset(index) {
+            const presets = loadPresets();
+            presets.splice(index, 1);
+            if (presets.length === 0) {
+                presets.push({ name: 'Default', speed: 7 });
+            }
+            savePresets(presets);
+        }
+
+        function updatePresetName(index, name) {
+            const presets = loadPresets();
+            presets[index].name = name;
+            savePresets(presets);
+        }
+
+        function updatePresetSpeed(index, speed) {
+            const presets = loadPresets();
+            presets[index].speed = Number(speed);
+            savePresets(presets);
+        }
+
+        // Add event listeners
+        addPresetBtn.addEventListener('click', addPreset);
     </script>
 </body>
 </html> 
