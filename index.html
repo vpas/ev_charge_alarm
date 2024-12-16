@@ -404,44 +404,6 @@
             background: #545F71;
             cursor: pointer;
         }
-
-        .preset-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .preset-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .preset-delete-btn {
-            width: 44px;
-            height: 44px;
-            background: #545F71;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .info-icon {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #CBD5E0;
-            color: white;
-            text-align: center;
-            line-height: 20px;
-            font-size: 14px;
-            margin-left: 8px;
-        }
     </style>
 </head>
 
@@ -505,9 +467,13 @@
         </div>
 
         <div class="form-group">
-            <label>Charger Speed Presets <span class="info-icon">i</span></label>
-            <div class="preset-inputs" id="presetInputs">
-                <!-- Preset rows will be added here dynamically -->
+            <label>Charger Speed Presets</label>
+            <div class="preset-inputs">
+                <div class="preset-row">
+                    <input type="text" placeholder="Name" class="form-input preset-name" id="presetName">
+                    <input type="number" placeholder="kW" class="form-input preset-kw" id="presetKw">
+                    <button class="add-preset-btn">+</button>
+                </div>
             </div>
         </div>
 
@@ -861,35 +827,29 @@
 
         // Screen navigation
         function showCalculator() {
-            // Hide other screens
+            // Hide welcome screen
+            welcomeScreen.style.display = 'none';
             welcomeScreen.classList.remove('active');
-            document.getElementById('addCarScreen').classList.remove('active');
-            
+
             // Show calculator screen
+            calculatorScreen.style.display = 'block';
             calculatorScreen.classList.add('active');
         }
 
         function showWelcome() {
-            // Hide other screens
+            // Hide calculator screen
+            calculatorScreen.style.display = 'none';
             calculatorScreen.classList.remove('active');
-            document.getElementById('addCarScreen').classList.remove('active');
-            
+
             // Show welcome screen
+            welcomeScreen.style.display = 'block';
             welcomeScreen.classList.add('active');
         }
 
         // Add car button event listener
         addCarButton.addEventListener('click', () => {
-            // Hide welcome screen
             welcomeScreen.classList.remove('active');
-            
-            // Show add car screen
             document.getElementById('addCarScreen').classList.add('active');
-            
-            // Initialize first preset row if not already done
-            if (presetInputs.children.length === 0) {
-                presetInputs.appendChild(createPresetRow());
-            }
         });
 
         // Check if user already has a car set up
@@ -962,130 +922,6 @@
             document.getElementById('addCarScreen').classList.remove('active');
             showCalculator();
         });
-
-        const presetInputs = document.getElementById('presetInputs');
-        let presets = [];
-
-        // Function to create a new preset row
-        function createPresetRow() {
-            const row = document.createElement('div');
-            row.className = 'preset-row';
-            
-            const nameInput = document.createElement('input');
-            nameInput.type = 'text';
-            nameInput.placeholder = 'Name';
-            nameInput.className = 'form-input preset-name';
-            
-            const kwInput = document.createElement('input');
-            kwInput.type = 'number';
-            kwInput.placeholder = 'kW';
-            kwInput.className = 'form-input preset-kw';
-            
-            const button = document.createElement('button');
-            
-            if (presets.length === 0) {
-                // First row: Add button
-                button.className = 'add-preset-btn';
-                button.textContent = '+';
-                button.onclick = addPreset;
-            } else {
-                // Subsequent rows: Delete button
-                button.className = 'preset-delete-btn';
-                button.textContent = '×';
-                button.onclick = () => deletePreset(row);
-            }
-            
-            row.appendChild(nameInput);
-            row.appendChild(kwInput);
-            row.appendChild(button);
-            
-            // Add input event listeners
-            [nameInput, kwInput].forEach(input => {
-                input.addEventListener('input', () => {
-                    checkFields();
-                    updatePresetArray();
-                });
-            });
-            
-            return row;
-        }
-
-        // Function to add a new preset
-        function addPreset() {
-            const currentInputs = getCurrentRowInputs(this.closest('.preset-row'));
-            if (currentInputs.name && currentInputs.speed) {
-                presets.push(currentInputs);
-                this.closest('.preset-row').querySelector('button').className = 'preset-delete-btn';
-                this.closest('.preset-row').querySelector('button').textContent = '×';
-                this.closest('.preset-row').querySelector('button').onclick = function() {
-                    deletePreset(this.closest('.preset-row'));
-                };
-                
-                // Add new empty row
-                presetInputs.appendChild(createPresetRow());
-                
-                // Check fields after adding preset
-                checkFields();
-            }
-        }
-
-        // Function to delete a preset
-        function deletePreset(row) {
-            const index = Array.from(presetInputs.children).indexOf(row);
-            presets.splice(index, 1);
-            row.remove();
-            checkFields();
-        }
-
-        // Function to get current row input values
-        function getCurrentRowInputs(row) {
-            const nameInput = row.querySelector('.preset-name');
-            const kwInput = row.querySelector('.preset-kw');
-            return {
-                name: nameInput.value.trim(),
-                speed: parseFloat(kwInput.value)
-            };
-        }
-
-        // Function to update preset array
-        function updatePresetArray() {
-            presets = Array.from(presetInputs.children)
-                .slice(0, -1) // Exclude the last row (empty row for new preset)
-                .map(row => getCurrentRowInputs(row))
-                .filter(preset => preset.name && !isNaN(preset.speed));
-        }
-
-        // Update checkFields function to require at least one preset
-        function checkFields() {
-            const isCarNameFilled = carNameInput.value.trim() !== '';
-            const isBatteryCapacityFilled = batteryCapacityInput.value.trim() !== '';
-            const hasValidPreset = presets.length > 0; // Check if there's at least one preset saved
-
-            if (isCarNameFilled && isBatteryCapacityFilled && hasValidPreset) {
-                doneButton.classList.add('active');
-                doneButton.disabled = false;
-            } else {
-                doneButton.classList.remove('active');
-                doneButton.disabled = true;
-            }
-        }
-
-        // Update done button click handler
-        doneButton.addEventListener('click', () => {
-            // Save the car details
-            setCookie('carName', carNameInput.value);
-            setCookie('batteryCapacity', batteryCapacityInput.value);
-            
-            // Save all presets
-            savePresets(presets);
-
-            // Show calculator screen
-            document.getElementById('addCarScreen').classList.remove('active');
-            showCalculator();
-        });
-
-        // Initialize first preset row
-        presetInputs.appendChild(createPresetRow());
     </script>
 </body>
 
