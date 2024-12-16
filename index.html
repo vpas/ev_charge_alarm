@@ -120,6 +120,69 @@
             background: #e0e0e0;
             color: #333;
         }
+
+        .settings-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            padding: 8px;
+            background: transparent;
+            color: #666;
+            font-size: 24px;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 900;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-settings {
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 24px;
+            padding: 8px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .settings-content {
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 600px) {
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -135,17 +198,26 @@
         </div>
     </div>
 
-    <div class="container">
-        <h1 style="text-align: center; color: #333;">EV Charge Calculator</h1>
-        
-        <div class="row">
-            <label>Battery Capacity (kWh)</label>
-            <div class="slider-container">
-                <input type="range" id="batteryCapacity" min="0" max="100" step="1" value="50">
-                <span class="value-display" id="batteryCapacityValue">50 kWh</span>
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button class="close-settings" id="closeSettings">×</button>
+        </div>
+        <div class="settings-content">
+            <div class="row">
+                <label>Battery Capacity (kWh)</label>
+                <div class="slider-container">
+                    <input type="range" id="batteryCapacity" min="0" max="100" step="1" value="50">
+                    <span class="value-display" id="batteryCapacityValue">50 kWh</span>
+                </div>
             </div>
         </div>
+    </div>
 
+    <div class="container">
+        <button class="settings-button" id="openSettings">⚙️</button>
+        <h1 style="text-align: center; color: #333;">EV Charge Calculator</h1>
+        
         <div class="row">
             <label>Current Charge (%)</label>
             <div class="slider-container">
@@ -179,6 +251,9 @@
         const setupOverlay = document.getElementById('setupOverlay');
         const installShortcutBtn = document.getElementById('installShortcut');
         const skipSetupBtn = document.getElementById('skipSetup');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const openSettingsBtn = document.getElementById('openSettings');
+        const closeSettingsBtn = document.getElementById('closeSettings');
 
         // Cookie functions
         function setCookie(name, value, days = 365) {
@@ -348,6 +423,28 @@
         calculateChargingTime();
         // Check if setup needed
         checkSetup();
+
+        // Settings panel functions
+        function openSettings() {
+            settingsPanel.classList.add('open');
+        }
+
+        function closeSettings() {
+            settingsPanel.classList.remove('open');
+        }
+
+        // Add settings button event listeners
+        openSettingsBtn.addEventListener('click', openSettings);
+        closeSettingsBtn.addEventListener('click', closeSettings);
+
+        // Close settings panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (settingsPanel.classList.contains('open') && 
+                !settingsPanel.contains(e.target) && 
+                e.target !== openSettingsBtn) {
+                closeSettings();
+            }
+        });
     </script>
 </body>
 </html> 
