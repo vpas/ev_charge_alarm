@@ -349,7 +349,7 @@
         </div>
     </div>
 
-    <div id="calculatorScreen" class="screen calculator-screen">
+    <div id="calculatorScreen" class="screen">
         <div class="container">
             <button class="settings-button" id="openSettings">⚙️</button>
             <h1 style="text-align: center; color: #333;">EV Charge Calculator</h1>
@@ -383,7 +383,7 @@
 
     <script>
         // App version
-        const APP_VERSION = '1.0.3';
+        const APP_VERSION = '1.0.4';
 
         // Update version numbers
         document.querySelectorAll('.version-number').forEach(el => {
@@ -581,6 +581,8 @@
         checkSetup();
         // Initialize presets
         updatePresetSelects(loadPresets());
+        // Check for existing car last
+        checkExistingCar();
 
         // Settings panel functions
         function openSettings() {
@@ -677,23 +679,41 @@
 
         // Screen navigation
         function showCalculator() {
+            // Hide welcome screen
+            welcomeScreen.style.display = 'none';
             welcomeScreen.classList.remove('active');
+
+            // Show calculator screen
+            calculatorScreen.style.display = 'block';
             calculatorScreen.classList.add('active');
         }
 
+        function showWelcome() {
+            // Hide calculator screen
+            calculatorScreen.style.display = 'none';
+            calculatorScreen.classList.remove('active');
+
+            // Show welcome screen
+            welcomeScreen.style.display = 'block';
+            welcomeScreen.classList.add('active');
+        }
+
         // Add car button event listener
-        addCarButton.addEventListener('click', showCalculator);
+        addCarButton.addEventListener('click', () => {
+            showCalculator();
+            // Save that user has set up a car
+            setCookie('batteryCapacity', batteryCapacity.value);
+        });
 
         // Check if user already has a car set up
         function checkExistingCar() {
             const hasExistingCar = getCookie('batteryCapacity'); // Use battery capacity as indicator
             if (hasExistingCar) {
                 showCalculator();
+            } else {
+                showWelcome();
             }
         }
-
-        // Initialize
-        checkExistingCar();
     </script>
 </body>
 
