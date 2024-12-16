@@ -315,6 +315,95 @@
         .calculator-screen {
             display: none;
         }
+
+        .add-car-screen {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .add-car-screen h1 {
+            color: #4A5568;
+            font-size: 32px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 40px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #4A5568;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #CBD5E0;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #4A5568;
+        }
+
+        .form-input::placeholder {
+            color: #A0AEC0;
+        }
+
+        .preset-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .preset-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .preset-name {
+            flex: 2;
+        }
+
+        .preset-kw {
+            flex: 1;
+            max-width: 100px;
+        }
+
+        .add-preset-btn {
+            width: 44px;
+            height: 44px;
+            background: #CBD5E0;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .done-button {
+            width: 100%;
+            padding: 15px;
+            background: #CBD5E0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: not-allowed;
+        }
+
+        .done-button.active {
+            background: #545F71;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -362,6 +451,33 @@
             <span class="plus-icon">+</span>
             Add Car
         </button>
+    </div>
+
+    <div id="addCarScreen" class="screen add-car-screen">
+        <h1>Add Car</h1>
+        
+        <div class="form-group">
+            <label>Car name</label>
+            <input type="text" id="carName" placeholder="Nissan Leaf 2020" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label>Battery Capacity (kWh)</label>
+            <input type="number" id="newBatteryCapacity" placeholder="200 kWh" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label>Charger Speed Presets</label>
+            <div class="preset-inputs">
+                <div class="preset-row">
+                    <input type="text" placeholder="Name" class="form-input preset-name" id="presetName">
+                    <input type="number" placeholder="kW" class="form-input preset-kw" id="presetKw">
+                    <button class="add-preset-btn">+</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="doneButton" class="done-button" disabled>Done</button>
     </div>
 
     <div id="calculatorScreen" class="screen">
@@ -732,9 +848,8 @@
 
         // Add car button event listener
         addCarButton.addEventListener('click', () => {
-            showCalculator();
-            // Save that user has set up a car
-            setCookie('batteryCapacity', batteryCapacity.value);
+            welcomeScreen.classList.remove('active');
+            document.getElementById('addCarScreen').classList.add('active');
         });
 
         // Check if user already has a car set up
@@ -761,6 +876,52 @@
                 calculatorClass: calculatorScreen.classList.contains('active')
             });
         }
+
+        // Get form elements
+        const carNameInput = document.getElementById('carName');
+        const batteryCapacityInput = document.getElementById('newBatteryCapacity');
+        const presetNameInput = document.getElementById('presetName');
+        const presetKwInput = document.getElementById('presetKw');
+        const doneButton = document.getElementById('doneButton');
+
+        // Function to check if all fields are filled
+        function checkFields() {
+            const isCarNameFilled = carNameInput.value.trim() !== '';
+            const isBatteryCapacityFilled = batteryCapacityInput.value.trim() !== '';
+            const isPresetNameFilled = presetNameInput.value.trim() !== '';
+            const isPresetKwFilled = presetKwInput.value.trim() !== '';
+
+            if (isCarNameFilled && isBatteryCapacityFilled && isPresetNameFilled && isPresetKwFilled) {
+                doneButton.classList.add('active');
+                doneButton.disabled = false;
+            } else {
+                doneButton.classList.remove('active');
+                doneButton.disabled = true;
+            }
+        }
+
+        // Add event listeners to all inputs
+        [carNameInput, batteryCapacityInput, presetNameInput, presetKwInput].forEach(input => {
+            input.addEventListener('input', checkFields);
+        });
+
+        // Add done button click handler
+        doneButton.addEventListener('click', () => {
+            // Save the car details
+            setCookie('carName', carNameInput.value);
+            setCookie('batteryCapacity', batteryCapacityInput.value);
+            
+            // Save the initial preset
+            const initialPresets = [{
+                name: presetNameInput.value,
+                speed: parseFloat(presetKwInput.value)
+            }];
+            savePresets(initialPresets);
+
+            // Show calculator screen
+            document.getElementById('addCarScreen').classList.remove('active');
+            showCalculator();
+        });
     </script>
 </body>
 
