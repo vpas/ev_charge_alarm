@@ -325,6 +325,13 @@
         const presetList = document.getElementById('presetList');
         const addPresetBtn = document.getElementById('addPreset');
 
+        // Default presets if none saved
+        const defaultPresets = [
+            { name: 'Home Charger', speed: 7 },
+            { name: 'Public AC', speed: 22 },
+            { name: 'Fast DC', speed: 50 }
+        ];
+
         // Cookie functions
         function setCookie(name, value, days = 365) {
             const date = new Date();
@@ -513,13 +520,6 @@
                 closeSettings();
             }
         });
-
-        // Default presets if none saved
-        const defaultPresets = [
-            { name: 'Home Charger', speed: 7 },
-            { name: 'Public AC', speed: 22 },
-            { name: 'Fast DC', speed: 50 }
-        ];
 
         // Load presets from cookies or use defaults
         function loadPresets() {
