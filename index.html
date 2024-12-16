@@ -184,6 +184,43 @@
             }
             
             timeResult.textContent = `Time to 80%: ${timeString}`;
+            
+            // Store calculated time for alarm setting
+            return { hours: hoursWhole, minutes: minutes };
+        }
+
+        // Check if device is iOS
+        function isIOS() {
+            return [
+                'iPad Simulator',
+                'iPhone Simulator',
+                'iPod Simulator',
+                'iPad',
+                'iPhone',
+                'iPod'
+            ].includes(navigator.platform)
+            || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+        }
+
+        // Set alarm function
+        function setAlarm(hours, minutes) {
+            if (isIOS()) {
+                // Calculate alarm time
+                const now = new Date();
+                const alarmTime = new Date(now.getTime() + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000));
+                
+                // Format time for Shortcuts (HH:mm)
+                const formattedTime = `${String(alarmTime.getHours()).padStart(2, '0')}:${String(alarmTime.getMinutes()).padStart(2, '0')}`;
+                
+                // Create Shortcuts URL
+                const shortcutURL = `shortcuts://run-shortcut?name=CreateAlarm&input=${encodeURIComponent(formattedTime)}`;
+                
+                // Open Shortcuts
+                window.location.href = shortcutURL;
+            } else {
+                alert('Alarm setting is currently only supported on iOS devices. Your charging will complete at ' + 
+                      new Date(Date.now() + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000)).toLocaleTimeString());
+            }
         }
 
         // Add event listeners
@@ -203,7 +240,8 @@
         });
 
         setAlarmButton.addEventListener('click', () => {
-            alert('Alarm feature coming soon!');
+            const chargingTime = calculateChargingTime();
+            setAlarm(chargingTime.hours, chargingTime.minutes);
         });
 
         // Load saved values on page load
