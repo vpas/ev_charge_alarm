@@ -257,7 +257,7 @@
         }
 
         .screen.active {
-            display: block;
+            display: block !important;
         }
 
         .welcome-screen {
@@ -383,7 +383,7 @@
 
     <script>
         // App version
-        const APP_VERSION = '1.0.4';
+        const APP_VERSION = '1.0.5';
 
         // Update version numbers
         document.querySelectorAll('.version-number').forEach(el => {
@@ -573,16 +573,33 @@
             markSetupComplete();
         });
 
-        // Load saved values on page load
-        loadSavedValues();
-        // Initial calculation
-        calculateChargingTime();
-        // Check if setup needed
-        checkSetup();
-        // Initialize presets
-        updatePresetSelects(loadPresets());
-        // Check for existing car last
-        checkExistingCar();
+        // Initialize app
+        function initializeApp() {
+            console.log('Initializing app...');
+
+            // First check if user has existing car
+            const hasExistingCar = getCookie('batteryCapacity');
+            console.log('Has existing car:', hasExistingCar);
+
+            if (hasExistingCar) {
+                // If car exists, load all saved values and show calculator
+                loadSavedValues();
+                updatePresetSelects(loadPresets());
+                calculateChargingTime();
+                showCalculator();
+            } else {
+                // If no car, show welcome screen
+                showWelcome();
+                // Still initialize presets for when they're needed
+                updatePresetSelects(loadPresets());
+            }
+
+            // Check if iOS setup is needed
+            checkSetup();
+        }
+
+        // Start the app
+        initializeApp();
 
         // Settings panel functions
         function openSettings() {
@@ -708,11 +725,26 @@
         // Check if user already has a car set up
         function checkExistingCar() {
             const hasExistingCar = getCookie('batteryCapacity'); // Use battery capacity as indicator
+            console.log('Cookie check:', { hasExistingCar });
+            console.log('Screen states before:', {
+                welcomeDisplay: welcomeScreen.style.display,
+                welcomeClass: welcomeScreen.classList.contains('active'),
+                calculatorDisplay: calculatorScreen.style.display,
+                calculatorClass: calculatorScreen.classList.contains('active')
+            });
+
             if (hasExistingCar) {
                 showCalculator();
             } else {
                 showWelcome();
             }
+
+            console.log('Screen states after:', {
+                welcomeDisplay: welcomeScreen.style.display,
+                welcomeClass: welcomeScreen.classList.contains('active'),
+                calculatorDisplay: calculatorScreen.style.display,
+                calculatorClass: calculatorScreen.classList.contains('active')
+            });
         }
     </script>
 </body>
