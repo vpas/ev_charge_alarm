@@ -473,6 +473,8 @@
         calculateChargingTime();
         // Check if setup needed
         checkSetup();
+        // Initialize presets
+        updatePresetSelects(loadPresets());
 
         // Settings panel functions
         function openSettings() {
