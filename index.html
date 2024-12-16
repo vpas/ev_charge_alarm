@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,35 +16,42 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
+
         .container {
             background: white;
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
         .row {
             margin: 20px 0;
         }
+
         label {
             display: block;
             margin-bottom: 8px;
             color: #333;
             font-weight: 500;
         }
+
         .slider-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         input[type="range"] {
             flex-grow: 1;
             height: 30px;
         }
+
         .value-display {
             min-width: 60px;
             text-align: right;
             font-weight: bold;
         }
+
         #timeResult {
             font-size: 1.2em;
             font-weight: bold;
@@ -54,6 +62,7 @@
             border-radius: 8px;
             margin: 20px 0;
         }
+
         button {
             width: 100%;
             padding: 15px;
@@ -65,9 +74,11 @@
             cursor: pointer;
             transition: background 0.3s;
         }
+
         button:hover {
             background: #1976D2;
         }
+
         .setup-overlay {
             position: fixed;
             top: 0;
@@ -80,7 +91,7 @@
             align-items: center;
             z-index: 1000;
         }
-        
+
         .setup-content {
             background: white;
             padding: 30px;
@@ -88,23 +99,23 @@
             max-width: 80%;
             text-align: center;
         }
-        
+
         .setup-content h2 {
             color: #2196F3;
             margin-top: 0;
         }
-        
+
         .setup-content p {
             margin: 20px 0;
             line-height: 1.5;
         }
-        
+
         .setup-buttons {
             display: flex;
             gap: 10px;
             justify-content: center;
         }
-        
+
         .setup-button {
             padding: 12px 20px;
             border-radius: 8px;
@@ -113,12 +124,12 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        
+
         .setup-primary {
             background: #2196F3;
             color: white;
         }
-        
+
         .setup-secondary {
             background: #e0e0e0;
             color: #333;
@@ -142,7 +153,7 @@
             width: 300px;
             height: 100%;
             background: white;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
             transition: right 0.3s ease;
             z-index: 900;
             padding: 20px;
@@ -242,6 +253,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="setup-overlay" id="setupOverlay">
         <div class="setup-content">
@@ -282,7 +294,7 @@
     <div class="container">
         <button class="settings-button" id="openSettings">⚙️</button>
         <h1 style="text-align: center; color: #333;">EV Charge Calculator</h1>
-        
+
         <div class="row">
             <label>Current Charge (%)</label>
             <div class="slider-container">
@@ -305,7 +317,7 @@
         <button id="setAlarm">Set Alarm</button>
 
         <div class="version-info">
-            Version 1.0.0
+            Version 1.0.1
         </div>
     </div>
 
@@ -381,7 +393,7 @@
             const capacity = parseFloat(batteryCapacity.value);
             const current = parseFloat(currentCharge.value);
             const speed = parseFloat(chargerSpeedPreset.value);
-            
+
             if (speed === 0) {
                 timeResult.textContent = 'Time to 80%: ∞ (Charger speed is 0)';
                 return;
@@ -391,11 +403,11 @@
             const targetCharge = 80;
             const energyNeeded = (capacity * (targetCharge - current) / 100);
             const hours = energyNeeded / speed;
-            
+
             // Convert to hours and minutes
             const hoursWhole = Math.floor(hours);
             const minutes = Math.round((hours - hoursWhole) * 60);
-            
+
             let timeString = '';
             if (hoursWhole > 0) {
                 timeString += `${hoursWhole} hour${hoursWhole !== 1 ? 's' : ''} `;
@@ -403,9 +415,9 @@
             if (minutes > 0) {
                 timeString += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
             }
-            
+
             timeResult.textContent = `Time to 80%: ${timeString}`;
-            
+
             // Store calculated time for alarm setting
             return { hours: hoursWhole, minutes: minutes };
         }
@@ -420,7 +432,7 @@
                 'iPhone',
                 'iPod'
             ].includes(navigator.platform)
-            || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+                || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
         }
 
         // Set alarm function
@@ -429,18 +441,18 @@
                 // Calculate alarm time
                 const now = new Date();
                 const alarmTime = new Date(now.getTime() + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000));
-                
+
                 // Format time for Shortcuts (HH:mm)
                 const formattedTime = `${String(alarmTime.getHours()).padStart(2, '0')}:${String(alarmTime.getMinutes()).padStart(2, '0')}`;
-                
+
                 // Create Shortcuts URL
                 const shortcutURL = `shortcuts://run-shortcut?name=CreateAlarm&input=${encodeURIComponent(formattedTime)}`;
-                
+
                 // Open Shortcuts
                 window.location.href = shortcutURL;
             } else {
-                alert('Alarm setting is currently only supported on iOS devices. Your charging will complete at ' + 
-                      new Date(Date.now() + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000)).toLocaleTimeString());
+                alert('Alarm setting is currently only supported on iOS devices. Your charging will complete at ' +
+                    new Date(Date.now() + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000)).toLocaleTimeString());
             }
         }
 
@@ -514,8 +526,8 @@
 
         // Close settings panel when clicking outside
         document.addEventListener('click', (e) => {
-            if (settingsPanel.classList.contains('open') && 
-                !settingsPanel.contains(e.target) && 
+            if (settingsPanel.classList.contains('open') &&
+                !settingsPanel.contains(e.target) &&
                 e.target !== openSettingsBtn) {
                 closeSettings();
             }
@@ -551,7 +563,7 @@
             chargerSpeedPreset.innerHTML = presets.map(preset => `
                 <option value="${preset.speed}">${preset.name} (${preset.speed} kW)</option>
             `).join('');
-            
+
             // Try to restore selected value
             if (selectedValue) {
                 chargerSpeedPreset.value = selectedValue;
@@ -593,4 +605,5 @@
         addPresetBtn.addEventListener('click', addPreset);
     </script>
 </body>
-</html> 
+
+</html>
